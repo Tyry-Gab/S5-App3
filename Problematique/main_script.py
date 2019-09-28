@@ -32,16 +32,18 @@ plt.plot(Time, signal)
 plt.show()
 plt.close('all')
 
-# Applying window to signal, order needs to be lower than 16000 based on signal
-N = len(signal)
+N = spf.getnframes()
+w_normalized = np.linspace(0, 1, N)
+w_normalized = 2*np.pi*w_normalized/N
+plt.plot(w_normalized, np.abs(np.fft.fft(signal)))
+plt.show()
+
+
 window = np.hanning(N)
-
 windowed_signal = signal * window
-
 plt.figure()
 plt.title('Windowed A#')
 plt.plot(Time, windowed_signal)
 plt.show()
 plt.close('all')
-
 print("Done!")
