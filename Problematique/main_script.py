@@ -36,11 +36,11 @@ plt.close('all')
 N = len(signal)
 window = np.hanning(N)
 
-windowed_singal = signal * window
+windowed_signal = signal * window
 
 plt.figure()
 plt.title('Windowed A#')
-plt.stem(windowed_singal)
+plt.plot(Time, windowed_signal)
 plt.show()
 plt.close('all')
 
