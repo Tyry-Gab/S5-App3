@@ -58,14 +58,14 @@ sorted_freq = sorted(amp_abs_fft_signal[0:elem_to_take], reverse = True)
 highest_32_sin_Hz = []
 i = 0
 while len(highest_32_sin_Hz) < 32:
-    frequency = w_normalized[np.where(amp_abs_fft_signal[0:elem_to_take] == sorted_freq[i])[0]]*fs/2/np.pi
-    for f in frequency:
-        highest_32_sin_Hz = add_if_far_enough(highest_32_sin_Hz, f, 0.01)
-        print(frequency)
-        print(f)
+    index = np.where(amp_abs_fft_signal[0:elem_to_take] == sorted_freq[i])[0]
+    for f in index:
+        frequency = w_normalized[f]*fs/2/np.pi
+        if is_in_list_with_tolerance(highest_32_sin_Hz, frequency, 0.01):
+            # Save in a list a tuple with structure = (Freq(Hz), Amplitude(raw), n)
+            highest_32_sin_Hz.append((frequency, sorted_freq[i], f))
     i += 1
 
-print(highest_32_sin_Hz)
 
 
 print("Done!")
