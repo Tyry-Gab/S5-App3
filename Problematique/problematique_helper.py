@@ -33,10 +33,11 @@ def get_useful_sine_waves_params(signal, fs, N):
     fft_result = np.fft.fft(signal * np.hanning(N))[0:N//2]
 
     # todo perform on windowed or original??
-    angle = np.angle(np.fft.fft(signal))[0:N//2]
+    angle = np.angle(fft_result)
 
-    # TODO look effects of params on results
-    f_peaks, d = sp.find_peaks(fft_result, height=0.0032*max(fft_result), distance=1, width=1)
+    m_width = np.where(fft_result == max(fft_result))[0][0]
+    db_fft_result = 20*np.log10(fft_result[0:N//2]/102734.57571665409)
+    f_peaks, d = sp.find_peaks(db_fft_result, height= -25, distance = m_width)
 
     amplitude = fft_result[f_peaks]
     phase = angle[f_peaks]
