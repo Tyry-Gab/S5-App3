@@ -1,3 +1,8 @@
 
 Labo/.idea/
 .idea/
+venv/
+Problematique/__pycache__/problematique_helper\.cpython-36\.pyc
+
+*.wav
+Problematique/*.wav
