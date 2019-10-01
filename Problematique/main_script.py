@@ -10,12 +10,13 @@ from Problematique.problematique_helper import *
 signal, fs, N = param_wav('note_guitare_LAd.wav')
 
 # Find most significative frequencies from their amplitude (f (Hz), amplitude, phase (rad))
-f_peaks, amplitude, phase = get_useful_sine_waves_params(signal, fs, N)
+f_peaks, amplitude, phase = get_useful_sine_waves_params(signal, fs, N, -25, 102734.57571665409)
 
-# todo Find the right number of coefficients
-rif_filter = create_RIF_equi_coeff(1000)
+w_normalized0 = 2 * np.pi * f_peaks[0] / fs
 
-convolution = convolution(signal, rif_filter)
+rif_filter = create_RIF_equi_coeff(885)
+
+convolution = redress_and_filter(signal, rif_filter)
 
 n = np.arange(len(convolution))
 
@@ -55,12 +56,14 @@ symph_signal = np.append(symph_signal, generate_double_note(re_signal, convoluti
 
 wavfile.write("Fifth_Symphony.wav",fs,np.int16(np.real(symph_signal)))
 
-
+Time = np.linspace(0, len(symph_signal)/fs, num=len(symph_signal))
 # Test to look if sine seems good
 test_sine = generate_sine_wave(amplitude[0], f_peaks[0], fs, phase[0], n)
-plt.figure(0)
-plt.plot(n, do_signal)
+plt.close()
+plt.figure()
+plt.plot(Time, np.real(symph_signal))
 plt.show()
+
 
 
 # # Plotting

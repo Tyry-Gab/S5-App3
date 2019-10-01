@@ -2,6 +2,7 @@ import wave
 import sys
 import numpy as np
 import scipy.signal as sp
+import matplotlib.pyplot as plt
 
 TEMPO = 16000
 
@@ -28,16 +29,17 @@ def param_wav(wav_file):
 
     return signal, fs, N
 
-def get_useful_sine_waves_params(signal, fs, N):
+def get_useful_sine_waves_params(signal, fs, N, peak_height, f0, m_width=-1):
     # Only first half is kept as information is only mirrored in second half.
     fft_result = np.fft.fft(signal * np.hanning(N))[0:N//2]
 
     # todo perform on windowed or original??
-    angle = np.angle(fft_result)
+    angle = np.angle(np.fft.fft(signal))
 
-    m_width = np.where(fft_result == max(fft_result))[0][0]
-    db_fft_result = 20*np.log10(fft_result[0:N//2]/102734.57571665409)
-    f_peaks, d = sp.find_peaks(db_fft_result, height= -25, distance = m_width)
+    if m_width < 0:
+        m_width = np.where(fft_result == np.max(fft_result))[0][0]
+    db_fft_result = 20*np.log10(fft_result/f0)
+    f_peaks, d = sp.find_peaks(db_fft_result, height = peak_height, distance = m_width)
 
     amplitude = fft_result[f_peaks]
     phase = angle[f_peaks]
@@ -49,7 +51,7 @@ def create_RIF_equi_coeff(nb_coeffs):
     return [1/nb_coeffs] * nb_coeffs
 
 # Redresse le signal (abs) et applique un filtre sur ce dernier.
-def convolution(signal, filter):
+def redress_and_filter(signal, filter):
     # todo Verify mode between "full" (default), "same", "valid"
     return np.convolve(filter, abs(signal), "valid")
 
@@ -86,15 +88,17 @@ def generate_double_note(note_signal, filtered_signal):
 def generate_half_silence():
     return [0] * TEMPO
 
+def filtre_passe_bande(N, largeur, fs, f_to_cut):
+    k = int((largeur * 2 * N / fs)) + 1
 
-def is_in_list_with_tolerance(some_list, element_to_add, accept_factor):
-    if element_to_add == None or element_to_add == 0.0:
-        return False
-    for element in some_list:
-        element_l = element[0] * (1.0 - accept_factor)
-        element_h = element[0] * (1.0 + accept_factor)
-        if element_to_add >= element_l and element_to_add <= element_h:
-            return False
-    return True
+    h = []
+    h.append(1 - 2 * (k / N))
+    for i in range(1, N, 1):
+        h.append((-2.0 * (1.0/N * np.sin(np.pi * i * k / N) / np.sin(np.pi * i / N)) * np.cos(2.0 * np.pi * f_to_cut / fs * i)))
+    return h
 
-
+# Adjust the signal with enveloppe
+def adjust_sound(signal, filter):
+    output = np.multiply(signal, filter)
+    output = output/(max(output)/12000)
+    return output
