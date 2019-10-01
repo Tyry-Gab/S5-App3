@@ -12,13 +12,14 @@ signal, fs, N = param_wav('note_guitare_LAd.wav')
 # Find most significative frequencies from their amplitude (f (Hz), amplitude, phase (rad))
 f_peaks, amplitude, phase = get_useful_sine_waves_params(signal, fs, N, -25, 102734.57571665409)
 
-w_normalized0 = 2 * np.pi * f_peaks[0] / fs
+w_normalized = np.linspace(0, N-1, N) * 2 * np.pi / N
 
 rif_filter = create_RIF_equi_coeff(885)
 
-convolution = redress_and_filter(signal, rif_filter)
+enveloppe = redress_and_filter(signal, rif_filter)
+show_figure(w_normalized, enveloppe, "Resultat convolution")
 
-n = np.arange(len(convolution))
+n = np.arange(len(enveloppe))
 
 #Generate notes: (A# is the base note)
 
@@ -31,28 +32,28 @@ la_signal = generate_signal(amplitude, f_peaks, fs, phase, n, -1)
 si_signal = generate_signal(amplitude, f_peaks, fs, phase, n, 1)
 do_signal2 = generate_signal(amplitude, f_peaks, fs, phase, n, 2)
 
-output_signal = generate_note(do_signal, convolution)
-output_signal = np.append(output_signal, generate_note(re_signal, convolution))
-output_signal = np.append(output_signal, generate_note(mi_signal, convolution))
-output_signal = np.append(output_signal, generate_note(fa_signal, convolution))
-output_signal = np.append(output_signal, generate_note(sol_signal, convolution))
-output_signal = np.append(output_signal, generate_note(la_signal, convolution))
-output_signal = np.append(output_signal, generate_note(si_signal, convolution))
-output_signal = np.append(output_signal, generate_note(do_signal2, convolution))
+output_signal = generate_note(do_signal, enveloppe)
+output_signal = np.append(output_signal, generate_note(re_signal, enveloppe))
+output_signal = np.append(output_signal, generate_note(mi_signal, enveloppe))
+output_signal = np.append(output_signal, generate_note(fa_signal, enveloppe))
+output_signal = np.append(output_signal, generate_note(sol_signal, enveloppe))
+output_signal = np.append(output_signal, generate_note(la_signal, enveloppe))
+output_signal = np.append(output_signal, generate_note(si_signal, enveloppe))
+output_signal = np.append(output_signal, generate_note(do_signal2, enveloppe))
 
 wavfile.write("Test_Gamme.wav",fs,np.int16(np.real(output_signal)))
 
 # 5th symphony
 symph_signal = generate_half_silence()
-symph_signal = np.append(symph_signal, generate_half_note(sol_signal, convolution))
-symph_signal = np.append(symph_signal, generate_half_note(sol_signal, convolution))
-symph_signal = np.append(symph_signal, generate_half_note(sol_signal, convolution))
-symph_signal = np.append(symph_signal, generate_double_note(mi_signal, convolution))
+symph_signal = np.append(symph_signal, generate_half_note(sol_signal, enveloppe))
+symph_signal = np.append(symph_signal, generate_half_note(sol_signal, enveloppe))
+symph_signal = np.append(symph_signal, generate_half_note(sol_signal, enveloppe))
+symph_signal = np.append(symph_signal, generate_double_note(mi_signal, enveloppe))
 symph_signal = np.append(symph_signal, generate_half_silence())
-symph_signal = np.append(symph_signal, generate_half_note(fa_signal, convolution))
-symph_signal = np.append(symph_signal, generate_half_note(fa_signal, convolution))
-symph_signal = np.append(symph_signal, generate_half_note(fa_signal, convolution))
-symph_signal = np.append(symph_signal, generate_double_note(re_signal, convolution))
+symph_signal = np.append(symph_signal, generate_half_note(fa_signal, enveloppe))
+symph_signal = np.append(symph_signal, generate_half_note(fa_signal, enveloppe))
+symph_signal = np.append(symph_signal, generate_half_note(fa_signal, enveloppe))
+symph_signal = np.append(symph_signal, generate_double_note(re_signal, enveloppe))
 
 wavfile.write("Fifth_Symphony.wav",fs,np.int16(np.real(symph_signal)))
 

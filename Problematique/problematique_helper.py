@@ -31,14 +31,18 @@ def param_wav(wav_file):
 
 def get_useful_sine_waves_params(signal, fs, N, peak_height, f0, m_width=-1):
     # Only first half is kept as information is only mirrored in second half.
-    fft_result = np.fft.fft(signal * np.hanning(N))[0:N//2]
+    fft_result = np.fft.fft(signal * np.hamming(N))[0:N//2]
 
-    # todo perform on windowed or original??
-    angle = np.angle(np.fft.fft(signal))
+    time = np.linspace(0, len(fft_result) / fs, num=len(fft_result))
+    # show_figure(time, np.hamming(N)[0:N//2], "Fenetre de hamming")
+    show_figure(time, fft_result, "Résultat fft avec fenetre de hamming")
+
+    angle = np.angle(fft_result)
 
     if m_width < 0:
         m_width = np.where(fft_result == np.max(fft_result))[0][0]
     db_fft_result = 20*np.log10(fft_result/f0)
+    show_figure(time, db_fft_result, "Résultat fft en dB")
     f_peaks, d = sp.find_peaks(db_fft_result, height = peak_height, distance = m_width)
 
     amplitude = fft_result[f_peaks]
@@ -53,7 +57,7 @@ def create_RIF_equi_coeff(nb_coeffs):
 # Redresse le signal (abs) et applique un filtre sur ce dernier.
 def redress_and_filter(signal, filter):
     # todo Verify mode between "full" (default), "same", "valid"
-    return np.convolve(filter, abs(signal), "valid")
+    return np.convolve(filter, abs(signal), "same")
 
 def generate_sine_wave(amplitude, f, fs, phase, n, ecart_note = 0):
     return np.multiply(amplitude, (np.sin((2 * np.pi * f * n / fs) * (2 ** (ecart_note / 12)) + phase)))
@@ -88,7 +92,7 @@ def generate_double_note(note_signal, filtered_signal):
 def generate_half_silence():
     return [0] * TEMPO
 
-def filtre_passe_bande(N, largeur, fs, f_to_cut):
+def filtre_coupe_bande(N, largeur, fs, f_to_cut):
     k = int((largeur * 2 * N / fs)) + 1
 
     h = []
@@ -102,3 +106,10 @@ def adjust_sound(signal, filter):
     output = np.multiply(signal, filter)
     output = output/(max(output)/12000)
     return output
+
+def show_figure(x, y, titre="", use_scatter = False):
+    plt.close('all')
+    plt.figure()
+    plt.scatter(x, y) if use_scatter else plt.plot(x, y)
+    plt.title(titre)
+    plt.show()
